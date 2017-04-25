@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html>
+<head><title>Canvas code example</title>
+<script src="jquery.min.js"></script>
+<script type="text/javascript" src="bez_decelerator.js"></script>
+<script type="text/javascript">
+// These are the parameters that define the problem
+
+const v0 = 800  // (10*60) 10px / frame (60/sec)
+const vF = 190
+const dF = 400
+const tF = 2
+
+// this defines the regionof the plot
+const rangeDomain = {
+	xMin : 0,
+	xMax : tF,
+	yMin : 0,
+	yMax : dF
+}
+let version = ""
+function doVersion1()
+{	
+	version = "1"
+	const v0 = 800  // (10*60) 10px / frame (60/sec)
+	const vF = 0
+	const dF = 400
+	const tF = 2
+	main(new BezDecelerator.class(v0, vF, tF, dF))
+}
+function doVersion2()
+{
+	version = "2"
+	const v0 = 800  // (10*60) 10px / frame (60/sec)
+	const vF = 180
+	const dF = 400
+	const tF = 2
+	main(new BezDecelerator.class(v0, vF, tF, dF))
+}
+function doVersion3()
+{
+	version = "3"
+	const v0 = 800  // (10*60) 10px / frame (60/sec)
+	const vF = 1200
+	const dF = 400
+	const tF = 2
+	main(new BezDecelerator.class(v0, vF, tF, dF))
+}
+function doVersion4()
+{
+	version = "4"
+	const v0 = 800  // (10*60) 10px / frame (60/sec)
+	const vF = 190
+	const dF = 400
+	const tF = 2
+	main(new BezDecelerator.class(v0, vF, tF, dF))
+}
+function doVersion5()
+{
+	version = "5"
+	const v0 = 800  // (10*60) 10px / frame (60/sec)
+	const vF = 210
+	const dF = 400
+	const tF = 2
+	main(new BezDecelerator.class(v0, vF, tF, dF))
+}
+function main(bezDecelerationObj) 
+{
+	$("#canvas-wrapper").empty()
+	$("#canvas-wrapper").append('<canvas id="canvas" width="1000" height="500"></canvas>')
+
+	var canvas = document.getElementById("canvas");
+	if (null==canvas || !canvas.getContext) return;
+	var N = 20
+	const decel = bezDecelerationObj
+
+
+	var axes={} 
+	var ctx=canvas.getContext("2d");
+	axes.x0 = 0; // starting x value
+	axes.xMin = 0; // starting x value
+	axes.xMax = tF
+	axes.xScale = ctx.width / tF
+
+	axes.yMin = 0
+	axes.yMax = dF
+	axes.yScale = ctx.height / dF
+
+	axes.y0 = 500
+
+	axes.scale = 40;                 // 40 pixels from x=0 to x=1
+	axes.doNegativeX = false;
+
+	drawAxes(ctx, axes);
+
+	var ff = decel.dd_func
+	var fd = decel.getDistance
+
+	graphParameterizedFunction(ctx, axes, fd, "rgb(66,44,255)", 2);
+	graphFunction(ctx, axes, decel.tangent_initial, "rgb(255,44,255)", 2)
+	graphFunction(ctx, axes, decel.tangent_final, "rgb(255,44,255)", 2)
+}
+function graphParameterizedFunction (ctx, axes, func, color, thick) {
+	var xx, yy
+	var dx=4, x0=axes.x0, y0=axes.y0, scale=axes.scale;
+
+	var iMax = Math.round((ctx.canvas.width)/dx);
+	var xDelta = (axes.xMax - axes.xMin)/((iMax) * 1.0)
+
+	var iMin = 0;
+	var h = ctx.canvas.height
+	var w = ctx.canvas.width
+
+	ctx.beginPath();
+	ctx.lineWidth = thick;
+	ctx.strokeStyle = color;
+
+	for (var i = iMin;i <= iMax; i++) {
+		xx = dx*i; 
+		var pValue = i * xDelta;
+
+		var xyValues = func(pValue)
+		var xValue = xyValues[0]
+		var yValue = xyValues[1]
+		// var xScaled = xx;
+		var xScaled = (xValue * w) / axes.xMax;
+		var yScaled =  (yValue * h) / axes.yMax 
+		// console.log(`loop x:${xValue} y:${yValue} xScaled: ${xScaled} yScaled:${yScaled}`)
+		// yy = scale*func(xx/scale);
+		
+		if (i == 0) 
+			ctx.moveTo(xScaled, h - yScaled);
+		else         
+			ctx.lineTo(xScaled, h - yScaled );
+	}
+	ctx.stroke();
+}
+
+function graphFunction (ctx, axes, func, color, thick) {
+	var xx, yy
+	var dx=4, x0=axes.x0, y0=axes.y0, scale=axes.scale;
+
+	var iMax = Math.round((ctx.canvas.width)/dx);
+	var xDelta = (axes.xMax - axes.xMin)/((iMax) * 1.0)
+
+	var iMin = 0;
+	var h = ctx.canvas.height
+	var w = ctx.canvas.width
+
+	ctx.beginPath();
+	ctx.lineWidth = thick;
+	ctx.strokeStyle = color;
+
+	for (var i = iMin;i <= iMax; i++) {
+		xx = dx*i; 
+		var xValue = i * xDelta;
+		var yValue = func(xValue)
+		var xScaled = xx;
+		var yScaled =  (yValue * h) / axes.yMax 
+		// console.log(`loop x:${xValue} y:${yValue} xScaled: ${xScaled} yScaled:${yScaled}`)
+		// yy = scale*func(xx/scale);
+		
+		if (i == 0) 
+			ctx.moveTo(xScaled, h - yScaled);
+		else         
+			ctx.lineTo(xScaled, h - yScaled );
+	}
+	ctx.stroke();
+}
+/*
+* The points are specified in mathematical (x,y) coordinates with (0,0) in the bottom left corner of the
+* region x > 0 y > 0
+*/
+function drawLine(ctx, startPt, endPt, strokeStyle)
+{
+	var w=ctx.canvas.width
+	var h=ctx.canvas.height
+	var x0 = startPt[0]
+	var x1 = endPt[0]
+	var y0 = startPt[1]
+	var y1 = endPt[1]
+	ctx.beginPath();
+	ctx.strokeStyle = strokeStyle; 
+	ctx.moveTo(x0, h - y0); ctx.lineTo(x1, h - y1);	
+	ctx.stroke();
+
+}
+function drawAxes(ctx,axes) 
+{
+
+	var w = ctx.canvas.width
+	var h = canvas.height
+	drawLine(ctx, [0,0], [w, 0], "rgb(0, 256,0)")
+	drawLine(ctx, [0,0], [0, h], "rgb(0,0,256)")
+	drawLine(ctx, [w,0], [w,h], "rgb(256,0,0)")
+	drawLine(ctx, [0,h], [w,h], "rgb(256,0,0)")
+
+}
+</script>
+</head>
+<body>
+	<div style="float:right; width:400px">
+		<h1>Plot</h1>
+		<p>Plot 4 instances of a deceleration.</p>
+		<ul>
+			<li><p>Duration = 2 secs</p></li>
+			<li><p>distance = 400</p></li>
+			<li><p>initial velocity = 800</p></li>
+		</ul>
+		<p>each case varies the final velocity</p>
+		<div>
+			<button onclick="doVersion1()">Final velocity = 0 the base case </button>
+		</div>
+		<div>
+			<button onclick="doVersion2()">Final velocity substabtially less that 400/2, say 180</button>
+		</div>
+		<div>
+			<button onclick="doVersion3()">final velocity greater than initial, say 1200</button>
+		</div>
+		<div>
+			<button onclick="doVersion4()">The trickiest case final velocity is close to 400/2 say 190</button>
+		</div>
+		<div>
+			<button onclick="doVersion5()">The trickiest case final velocity is close to 400/2 say 2100</button>
+		</div>		
+	</div>
+	<div id="canvas-wrapper"><canvas id="canvas" width="1000" height="500"></canvas></div>
+</body>
+</html>

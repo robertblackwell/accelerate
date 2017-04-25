@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+
+<head>
+
+<script src="jquery.min.js"></script>
+<script src="pixi.js"></script>
+<script src="mathjs.js"></script>
+<script src="decelerators.js"></script>
+<style>
+body {
+  font-family: -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+}
+</style>
+</head>
+
+<script type="text/javascript">
+const initVelocity = 600  // (10*60) 10px / frame (60/sec)
+const finalVelocity = 0
+const distance = 400
+const duration = 2
+
+let app;
+let wheel;
+
+document.addEventListener("DOMContentLoaded", function(event) { 
+  // main()
+});
+function doVersion1()
+{
+	main(Decelerators.version1)
+}
+function doVersion2()
+{
+	main(Decelerators.version2)	
+}
+function doVersion3()
+{
+	main(Decelerators.version3)	
+}
+function doVersion4()
+{
+	main(Decelerators.version4)	
+}
+// the main logic
+function main(DeceleratorClass)
+{
+    // setup canvas & add wheel & line
+    app = makeCanvas()
+    wheel = makeWheel(app.stage)
+    makeLine(app.stage,distance)
+	
+	// create an object that will move the ball    
+	const ball_mover = ballMover(DeceleratorClass, initVelocity, finalVelocity, duration, distance, stopWheel)
+
+	// store starting time
+	let t0
+
+	// on frame tick move the ball by a delta of time
+	function moveWheel(delta){
+		wheel.x = ball_mover(delta) //this is what causes the ball to move on the canvas
+	}
+	// animation done callback
+	function stopWheel(){
+		logDuration('Movement:',t0)
+		app.ticker.remove(moveWheel);
+	}
+	// wait 1 second before kicking the whole thing off
+	setTimeout(function(){
+		t0 = performance.now();
+		app.ticker.add(moveWheel);
+	},1000)
+}
+
+/**
+ * Thing that calculates the balls new position based on initial conditions and current time
+ *
+ * @example
+ * 	const mover = ballMover(500, 10, 500, function(){
+ *     console.log('done')
+ * 	})
+ *
+ * @param  {constructor}    DeceleratorClass - class to provide decelerator function
+ * @param  {number}    v0    The initial velocity
+ * @param  {number}    vF    The final velocity
+ * @param  {number}    tF    The final time / duration
+ * @param  {number}    dF    The distance
+ * @param  {Function}  cb    Called when deceleration has completed
+ * @return {Function}  function to be called with a time delta
+ */
+function ballMover(DeceleratorClass, v0, vF, tF, dF, cb)
+{
+  	const drawGraph = false;
+	const decel = new DeceleratorClass(v0, vF, tF, dF, 20)
+	// const decel = new Decelerators.version2(v0, vF, tF, dF, 20)
+	let elapsedTime = 0
+
+	function graphDistanceFunction(atTime, atPosition)
+	{
+        const dot = new PIXI.Graphics()
+        dot.beginFill(0xFF0000)
+        dot.drawCircle(atTime*200, atPosition, 5)
+        dot.endFill()
+        app.stage.addChild(dot)
+	}
+
+  // decelerate closure
+	function moveBallByDelta(delta)
+	{
+		// sum of deltas
+		elapsedTime += delta
+		let elapsedSeconds = elapsedTime/60
+
+		// stop movement
+		if(elapsedSeconds > tF) {
+			cb()
+			return dF
+		}
+
+		// move item
+		let position = decel.getDistance(elapsedSeconds)
+		if(drawGraph)
+			graphDistanceFunction(elapsedSeconds, position)
+		return position;
+		return getDistance(elapsedSeconds)
+	}
+	return moveBallByDelta
+}
+
+/*
+* simply helper functions
+*/
+function makeCanvas()
+{
+	const options = {backgroundColor : 0x333333, antialias: true}
+    canvas = new PIXI.Application(600, 800, options);
+	let el = document.getElementById('canvas-wrapper')
+	$("#canvas-wrapper").empty()
+	el.appendChild(canvas.view)
+    // document.body.appendChild(canvas.view);
+	return canvas
+}
+
+// build a wheel
+function makeWheel(stage)
+{
+	const w = new PIXI.Graphics();
+	w.beginFill(0xFF66CC);
+	w.drawCircle(0,0,30);
+	w.endFill();
+	w.x = 0;
+	w.y = 200-30;
+	stage.addChild(w)
+	return w
+}
+
+// draw the finishing line
+function makeLine(stage,x)
+{
+	let width = 4
+	let rect = new PIXI.Graphics();
+	rect.beginFill(0xFFFFFF);
+	rect.drawRect(x-(width/2),0,width,600);
+	rect.endFill();
+	rect.x = 0;
+	rect.y = 0;
+	stage.addChild(rect)
+}
+
+// add the duration to DOM
+function logDuration(msg,t0)
+{
+	return;
+	let duration = (performance.now() - t0).toFixed(0)
+	let node = document.createElement('p')
+	node.innerHTML = msg + ' ' + duration + " ms."
+	document.body.appendChild(node)
+}
+
+</script>
+
+<body>
+	<div style="float:right; width:500px">
+		<h1>Roll</h1>
+		<p>Use one of three deceleration functions to roll the ball</p>
+		<div>
+			<button onclick="doVersion1()">version 1</button>
+			<p>This version uses an iteration technique involving a series of straight lines</p>
+		</div>
+		<div>
+			<button onclick="doVersion2()">version 2</button>
+			<p>This version uses an iteration technique involving a series of straight lines,
+				but with a smoother transition bwteen the initial velocity and subsequent line
+				segments</p>
+		</div>
+		<div>
+			<button onclick="doVersion3()">version 3</button>
+			<p>This version uses a formular for the deceleration curve bit there is a no
+				differentiable point where the initial velocity first gets reduced</p>
+			<p>This version is probably the faster of the three</p>
+		</div>
+		<div>
+			<button onclick="doVersion4()">version 4</button>
+			<p>This version uses a formular for the deceleration curve that is like version 2</p>
+		</div>
+	</div>
+	<div id="canvas-wrapper"><canvas id="canvas" width="1000" height="500"></canvas></div>
+</body>
+</html>
