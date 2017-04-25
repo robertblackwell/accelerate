@@ -1,7 +1,7 @@
 # Accelerate
 
 
-### Usage
+## Usage
 
 ```js
 const initVelocity = 0
@@ -23,4 +23,23 @@ carAccelerator.to(newV, overDist, overTime)
 .then(carAccelerator.to(newV, overTime))
 .then(console.log('done'))
 
+```
+
+
+## Commands
+
+### Test
+
+Run tests
+
+```bash
+npm test
+```
+
+### Lint
+
+Run the linter
+
+```bash
+npm run lint
 ```

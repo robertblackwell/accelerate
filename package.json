@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/brenwell/Accelerate/issues"
   },
-  "homepage": "https://github.com/brenwell/Accelerate#readme"
+  "homepage": "https://github.com/brenwell/Accelerate#readme",
+  "devDependencies": {
+    "eslint": "^3.19.0"
+  }
 }
