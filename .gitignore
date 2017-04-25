@@ -1,0 +1,9 @@
+.DS_Store
+.tmp/
+.idea/
+*.orig
+/*.log
+/dist
+/build
+/*.sublime-workspace
+/node_modules
