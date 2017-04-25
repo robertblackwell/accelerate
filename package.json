@@ -7,7 +7,11 @@
     "example": "example"
   },
   "scripts": {
-    "test": "./taskfile test"
+    "start": "./taskfile start",
+    "build": "./taskfile build",
+    "lint": "./taskfile lint",
+    "test": "./taskfile test",
+    "docs": "./taskfile docs"
   },
   "repository": {
     "type": "git",
