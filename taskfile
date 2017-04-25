@@ -1,0 +1,43 @@
+#!/bin/bash
+PATH=./node_modules/.bin:$PATH
+
+function public:start {
+  rm -rf ./lib/
+  webpack --progress --colors --watch --env.fileName 'suga.js' --env.libName 'suga'
+}
+
+function public:build {
+  webpack --progress --colors --env.fileName 'suga.js' --env.libName 'suga'
+  webpack --progress --colors -p --env.fileName 'suga.min.js' --env.libName 'suga'
+}
+
+function public:test {
+  mocha-webpack --opts './test/mocha.opts' --glob "*.test.js" test || { echo 'Test failed' ; exit 1; }
+}
+
+function public:lint {
+  # eslint scripts src test --max-warnings 0
+  eslint src --fix --max-warnings 0
+}
+
+function public:lib {
+  rm -rf ./lib && babel src --out-dir lib -s
+}
+
+function public:docs {
+  rm -rf ./docs && jsdoc -c ./jsdoc.json -R README.md
+}
+
+# ------------------------------------------
+# DEFAULT public: list all possible commands
+#
+function public:help {
+    echo "$0 <task> <args>"
+    echo "Tasks:"
+    compgen -A function | sed -En 's/public:(.*)/\1/p' | cat -n
+}
+
+# ---------- Do NOT edit below --------------
+
+TIMEFORMAT="Task completed in %3lR"
+time "public:${@:-help}" # make help default

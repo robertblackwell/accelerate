@@ -1,0 +1,22 @@
+{
+  "name": "accelerate",
+  "version": "1.0.0",
+  "description": "Manages velocity and acceleration",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "./taskfile test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brenwell/Accelerate.git"
+  },
+  "author": "Robert & Brendon Blackwell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brenwell/Accelerate/issues"
+  },
+  "homepage": "https://github.com/brenwell/Accelerate#readme"
+}
